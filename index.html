@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Capability Question | Ground Truth</title>
+<meta name="description" content="A research design tool for measuring what AI enablement actually does to the people using it. Built by Shannon L. Coleman, PhD.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #141929;
+    --bg-panel: #1a2035;
+    --bg-input: #202840;
+    --bg-report: #1e2540;
+    --gold: #c9a547;
+    --gold-light: #e8c96a;
+    --gold-dim: #a07e30;
+    --silver: #e8eaf0;
+    --silver-dim: #9ba3b8;
+    --accent: #7b8fd4;
+    --border: #2a3452;
+    --border-light: #3a4668;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--silver);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  .site-header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    text-align: center;
+    padding: 1rem;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .site-header span {
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* MAIN LAYOUT */
+  .main {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5rem 1.5rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .bg-gradient {
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(201,165,71,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(123,143,212,0.04) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .content-wrap {
+    width: 100%;
+    max-width: 620px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* FOOTER */
+  .site-footer {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .site-footer p {
+    font-size: 0.65rem;
+    color: var(--silver-dim);
+    opacity: 0.4;
+    letter-spacing: 0.05em;
+  }
+
+  .site-footer a {
+    color: inherit;
+    text-decoration: none;
+    pointer-events: all;
+  }
+
+  /* PHASES */
+  .phase { display: none; }
+  .phase.active { display: block; }
+
+  /* FADE */
+  .fade-in {
+    animation: fadeIn 0.3s ease forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* INTRO */
+  .intro { text-align: center; }
+
+  .crosshair {
+    width: 48px;
+    height: 48px;
+    border: 1px solid var(--gold);
+    border-radius: 50%;
+    margin: 0 auto 2rem;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .crosshair::before {
+    content: '';
+    position: absolute;
+    width: 24px; height: 1px;
+    background: var(--gold);
+  }
+
+  .crosshair::after {
+    content: '';
+    position: absolute;
+    width: 1px; height: 24px;
+    background: var(--gold);
+  }
+
+  .crosshair-inner {
+    width: 32px; height: 32px;
+    border: 1px solid var(--gold-dim);
+    border-radius: 50%;
+    opacity: 0.4;
+  }
+
+  .intro h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--silver);
+    margin-bottom: 0.75rem;
+    line-height: 1.2;
+  }
+
+  .intro .tagline {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-style: italic;
+    color: var(--gold-dim);
+    margin-bottom: 2rem;
+  }
+
+  .intro p {
+    font-size: 0.9rem;
+    color: var(--silver-dim);
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .intro .meta {
+    margin-top: 1.5rem;
+    font-size: 0.72rem;
+    color: var(--silver-dim);
+    opacity: 0.6;
+    letter-spacing: 0.05em;
+  }
+
+  /* PROGRESS */
+  .progress-wrap { margin-bottom: 2rem; }
+
+  .progress-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .progress-section {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 500;
+  }
+
+  .progress-count {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: var(--silver-dim);
+  }
+
+  .progress-bar-bg {
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  /* QUESTION */
+  .question-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--silver);
+    line-height: 1.4;
+    margin-bottom: 2rem;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 120px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--silver);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    padding: 1rem 1.25rem;
+    resize: none;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  textarea:focus { border-color: var(--gold-dim); }
+  textarea::placeholder { color: var(--silver-dim); opacity: 0.5; }
+
+  .question-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+  }
+
+  .hint {
+    font-size: 0.7rem;
+    color: var(--silver-dim);
+    opacity: 0.5;
+  }
+
+  /* REVIEW */
+  .review-header { margin-bottom: 1.5rem; }
+
+  .review-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+
+  .review-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: var(--silver);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .review-header p {
+    font-size: 0.85rem;
+    color: var(--silver-dim);
+    line-height: 1.6;
+  }
+
+  .review-list {
+    max-height: 55vh;
+    overflow-y: auto;
+    margin-bottom: 1.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .review-item {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: var(--bg-input);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+
+  .review-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+  }
+
+  .review-item-meta {
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.25rem;
+  }
+
+  .review-item-question {
+    font-size: 0.82rem;
+    color: var(--silver);
+    line-height: 1.5;
+    margin-top: 0.25rem;
+  }
+
+  .review-item-answer {
+    font-size: 0.85rem;
+    color: var(--silver-dim);
+    line-height: 1.6;
+  }
+
+  .edit-btn {
+    background: transparent;
+    border: none;
+    color: var(--silver-dim);
+    font-size: 0.72rem;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    text-decoration: underline;
+    flex-shrink: 0;
+    margin-left: 1rem;
+    white-space: nowrap;
+  }
+
+  .edit-form { margin-top: 0.5rem; }
+
+  .edit-form textarea {
+    min-height: 80px;
+    font-size: 0.85rem;
+    border-color: var(--gold-dim);
+  }
+
+  .save-btn {
+    margin-top: 0.5rem;
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    padding: 0.35rem 1rem;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .review-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .start-over-btn {
+    background: transparent;
+    border: none;
+    color: var(--silver-dim);
+    font-size: 0.8rem;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    text-decoration: underline;
+  }
+
+  /* GENERATING */
+  .generating { text-align: center; padding: 2rem 0; }
+
+  .spinner {
+    width: 48px; height: 48px;
+    border: 2px solid var(--border);
+    border-top: 2px solid var(--gold);
+    border-radius: 50%;
+    margin: 0 auto 2rem;
+    animation: spin 1.2s linear infinite;
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .generating h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: var(--silver);
+    margin-bottom: 0.75rem;
+  }
+
+  .generating-status {
+    font-size: 0.8rem;
+    color: var(--gold-dim);
+    letter-spacing: 0.05em;
+    animation: pulse 2.2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  /* REPORT */
+  #report-view {
+    display: none;
+    min-height: 100vh;
+    background: var(--bg);
+    padding: 2rem 1rem;
+  }
+
+  #report-view.active { display: block; }
+
+  .report-container { max-width: 760px; margin: 0 auto; }
+
+  .report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .report-header-left .report-eyebrow {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.4rem;
+  }
+
+  .report-header-left h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    color: var(--silver);
+    font-weight: 700;
+  }
+
+  .report-header-right { display: flex; gap: 0.75rem; }
+
+  .report-body {
+    background: var(--bg-report);
+    border-radius: 8px;
+    padding: 2.5rem;
+    border: 1px solid var(--border);
+  }
+
+  .report-footer {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .report-footer p {
+    font-size: 0.75rem;
+    color: var(--silver-dim);
+  }
+
+  .report-footer a { color: var(--gold); text-decoration: none; }
+
+  .run-again-btn {
+    background: transparent;
+    border: none;
+    color: var(--silver-dim);
+    font-size: 0.75rem;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    text-decoration: underline;
+  }
+
+  /* REPORT CONTENT STYLES */
+  .report-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: var(--gold);
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .report-h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    color: var(--gold);
+    font-weight: 600;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .report-h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .report-p {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    color: var(--silver-dim);
+    line-height: 1.8;
+    margin-bottom: 0.6rem;
+  }
+
+  .report-strong { color: var(--silver); font-weight: 600; }
+  .report-em { font-style: italic; color: #b8bdd4; }
+
+  .report-li {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.4rem;
+    padding-left: 0.5rem;
+  }
+
+  .report-li-bullet { color: var(--gold); flex-shrink: 0; margin-top: 0.1rem; }
+
+  .report-li-text {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    color: var(--silver-dim);
+    line-height: 1.7;
+  }
+
+  .report-spacer { height: 0.5rem; }
+
+  .report-attribution {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    color: var(--silver-dim);
+    font-style: italic;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    line-height: 1.7;
+  }
+
+  /* BUTTONS */
+  .btn-primary {
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    padding: 0.65rem 1.75rem;
+    border-radius: 4px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-primary:hover { background: var(--gold); color: var(--bg); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-primary:disabled:hover { background: transparent; color: var(--gold); }
+
+  .btn-secondary {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--silver-dim);
+    padding: 0.65rem 1.75rem;
+    border-radius: 4px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-secondary:hover { border-color: var(--silver-dim); color: var(--silver); }
+
+  @media print {
+    .site-header, .site-footer, .report-header-right, .report-footer { display: none !important; }
+    body, #report-view { background: white !important; color: black !important; }
+    .report-body { border: none; padding: 0; background: white; }
+    .report-h2, .report-title { color: #333 !important; border-color: #ccc !important; }
+    .report-p, .report-li-text { color: #444 !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-gradient"></div>
+
+<header class="site-header">
+  <span>Ground Truth · Capability Measurement Tool</span>
+</header>
+
+<!-- MAIN INTERACTION AREA -->
+<main class="main" id="main-area">
+  <div class="content-wrap">
+
+    <!-- INTRO PHASE -->
+    <div class="phase active fade-in" id="phase-intro">
+      <div class="intro">
+        <div class="crosshair"><div class="crosshair-inner"></div></div>
+        <h1>The Capability Question</h1>
+        <p class="tagline">A research design tool for AI enablement measurement</p>
+        <p>Most organizations deploying AI tools to their workforce are measuring adoption. Utilization rates. Completion data. Satisfaction scores. None of that tells you whether your people are actually getting better at their jobs.</p>
+        <p>This tool asks you 19 questions about your AI tool, your employees, and your organizational context. Then it generates a tailored study design, honest about what is feasible and specific about what the findings can and cannot claim.</p>
+        <button class="btn-primary" onclick="startAssessment()">Begin Assessment</button>
+        <p class="meta">19 questions · 10 to 15 minutes</p>
+      </div>
+    </div>
+
+    <!-- QUESTIONS PHASE -->
+    <div class="phase" id="phase-questions">
+      <div class="progress-wrap">
+        <div class="progress-top">
+          <span class="progress-section" id="progress-section"></span>
+          <span class="progress-count" id="progress-count"></span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+        </div>
+      </div>
+      <p class="question-text" id="question-text"></p>
+      <textarea id="answer-input" placeholder="Type your answer here..." onkeydown="handleKeyDown(event)"></textarea>
+      <div class="question-footer">
+        <span class="hint">Cmd + Enter to continue</span>
+        <button class="btn-primary" id="continue-btn" onclick="submitAnswer()" disabled>Continue</button>
+      </div>
+    </div>
+
+    <!-- REVIEW PHASE -->
+    <div class="phase" id="phase-review">
+      <div class="review-header">
+        <p class="review-label">Review Your Answers</p>
+        <h2>Everything look right?</h2>
+        <p>Edit any answer before generating your study design.</p>
+      </div>
+      <div class="review-list" id="review-list"></div>
+      <div class="review-footer">
+        <button class="start-over-btn" onclick="resetAll()">Start over</button>
+        <button class="btn-primary" onclick="generateReport()">Generate Study Design</button>
+      </div>
+    </div>
+
+    <!-- GENERATING PHASE -->
+    <div class="phase" id="phase-generating">
+      <div class="generating">
+        <div class="spinner"></div>
+        <h2>Generating your study design</h2>
+        <p class="generating-status" id="generating-status">Analyzing your inputs...</p>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- REPORT VIEW (full page takeover) -->
+<div id="report-view">
+  <div class="report-container">
+    <div class="report-header">
+      <div class="report-header-left">
+        <p class="report-eyebrow">Ground Truth · Capability Measurement Tool</p>
+        <h1>Your Study Design</h1>
+      </div>
+      <div class="report-header-right">
+        <button class="btn-primary" onclick="window.print()">Download PDF</button>
+        <button class="btn-secondary" onclick="resetAll()">Start Over</button>
+      </div>
+    </div>
+    <div class="report-body" id="report-body"></div>
+    <div class="report-footer">
+      <p>Built by <a href="https://shannonlcoleman.com" target="_blank">Shannon L. Coleman, PhD</a> · <a href="https://byshannoncoleman.substack.com" target="_blank">Ground Truth</a></p>
+      <button class="run-again-btn" onclick="resetAll()">Run another assessment</button>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <p>Built by Shannon L. Coleman, PhD · <a href="https://byshannoncoleman.substack.com" target="_blank">Ground Truth</a></p>
+</footer>
+
+<script>
+const PROXY_URL = "https://capability-proxy.4slcole.workers.dev";
+
+const SYSTEM_PROMPT = `You are a research design assistant built to help practitioners measure what AI enablement actually does to the people using it. You were created by Shannon L. Coleman, PhD, an experience research and strategy leader whose work sits at the intersection of rigorous measurement and organizational decision-making.
+
+Your job is not to produce a generic research plan. It is to reason carefully about the specific situation a practitioner has described and generate a study design that is honest about what is feasible, clear about what the findings will and will not be able to claim, and genuinely useful for the decisions the practitioner is trying to make.
+
+You operate from a specific theoretical foundation:
+
+Capability is not the same as completion. An employee who finishes tasks is not necessarily an employee who is developing judgment. Adoption metrics, satisfaction scores, and task completion rates measure behavior. They do not measure whether employees can evaluate AI outputs critically, perform when the tool is wrong or absent, or make better decisions than they could before the tool was deployed.
+
+Confidence and capability diverge in predictable ways when AI tools are involved. AI systems produce fluent, authoritative outputs that reliably increase user confidence regardless of accuracy. A well-designed study has to disaggregate confidence from capability rather than treating self-reported confidence as a proxy for either.
+
+Substitution and development look identical in the short term. A tool that does the thinking for employees and a tool that develops their thinking produce similar short-term metrics. Longitudinal measurement is the only way to tell the difference.
+
+---
+
+REASONING PRINCIPLES
+
+When you have collected all of the practitioner's responses, do not simply organize their answers into a template. Reason about what they have told you. Consider the following:
+
+Feasibility constraints come first. If the practitioner has no baseline data, a short timeline, and limited research support, your recommendations need to reflect that honestly. Do not recommend a longitudinal pre-post study with a control group to someone who has six weeks and no dedicated research staff. Recommend what is actually achievable and explain what that limits them to claiming.
+
+The gap between what they are measuring and what they are worried about is your most important input. If a practitioner tells you their current metrics look fine but they are worried employees are becoming dependent on the tool rather than developing judgment, that gap is the study. Your design should be built around closing it.
+
+Match the output to the audience and the decision. A study designed to inform an executive go-or-no-go decision needs different framing, different measures, and different levels of certainty than one designed to help a research team iterate on a deployment. A regulated industry with an HR audience has different constraints than a tech company with an internal research team.
+
+Prior attempts matter. If someone tried to measure capability before and hit organizational resistance, your recommendations should account for that. Suggest approaches that are harder to block, lighter weight, or easier to defend to skeptical stakeholders.
+
+Be honest about the interaction design and automation level. A RAG-based system that surfaces organizational knowledge requires different measurement approaches than a generative tool producing novel outputs. A tool where outputs go directly into workflows with minimal employee review requires a fundamentally different capability framing than one where employees actively evaluate and decide whether to use the output. In highly automated contexts, the capability question shifts from "can employees evaluate outputs" to "can employees recognize when to intervene, override, or escalate."
+
+Never recommend more than the situation can support. It is better to recommend a modest study that will actually happen and produce usable findings than an ambitious one that will get blocked, defunded, or produce data nobody acts on.
+
+KEY BRANCHING LOGIC:
+- If no baseline data exists: preconditions section is almost certain, design options are constrained
+- If long deployment with no measurement: feasibility question is urgent, may need to recommend preconditions before study
+- If regulated industry: method caveats expand, data collection limitations apply
+- If no dedicated research support AND short timeline: narrow methods to lightweight options only
+- If prior measurement attempts were blocked: recommend approaches harder to block organizationally
+- If external stakeholder audience: report framing changes significantly toward defensibility
+- If RAG-based tool: confidence and retrieval quality get extra weight in recommendations
+- If population under 50: statistical logic shifts, some methods become infeasible
+- If low AI familiarity: baseline capability assessment more urgent, confidence divergence likely faster
+- If low organizational appetite: lean toward embedded calibration probes over formal studies
+- If build vs buy decision: rigor and timeline requirements shift toward binary evidence
+- If tool is highly automated with minimal employee review: capability framing shifts to intervention and override judgment
+
+WRITING STYLE:
+- Never use em dashes in your report output. Use commas, periods, or restructure the sentence instead.
+- Always title the report exactly as follows: "Capability Measurement Study Design: [brief context descriptor]" where the context descriptor is 3 to 6 words describing the specific deployment. Example: "Capability Measurement Study Design: AI Support Bot, Software Engineering Population". Never use any other title format.
+- When scenario-based assessments are recommended, always provide a draft rubric framework specific to the domain and failure modes the practitioner described. Do not tell practitioners to develop scoring rubrics without providing a starting point. Give them example scoring criteria, distinguish between outcome-based and process-based items, and note where two independent raters and inter-rater reliability checks are needed.
+
+---
+
+METHODS TOOLKIT
+
+Scenario-based assessments
+What they are: Structured tasks presenting employees with realistic situations requiring them to evaluate an AI output, identify an error, or make a decision beyond what the tool provided. Scored against expert judgment or defensible quality criteria.
+When to use: When you need a direct measure of judgment. Best for outcome-based judgment domains with verifiable answers or defensible expert standards. Also appropriate for process-based domains when scoring criteria focus on reasoning quality.
+What they require: Domain knowledge to construct valid scenarios, expert raters or defensible scoring rubric, administration at multiple timepoints. Before recommending, ask whether the practitioner can articulate what good judgment looks like. If not, the construct needs development first.
+What they can claim: Whether employees can evaluate AI outputs critically at a given point, and whether that ability changes over time.
+What they cannot claim: Why capability is or is not developing, or what specifically about the tool is driving the pattern.
+Sample size: Minimum 30 participants per measurement wave to detect moderate effects. More if subgroup analysis is planned.
+Caution: Scenarios must reflect realistic conditions. In process-based domains, be explicit that findings reflect reasoning quality rather than correctness.
+
+Think-aloud protocols
+What they are: Qualitative sessions where employees narrate their reasoning while completing tasks with the AI tool.
+When to use: When you need to understand reasoning behind behavior. Especially valuable in process-based judgment domains and when quantitative measures show unexpected patterns.
+What they require: Skilled facilitation, time per participant, qualitative analysis capacity. Eight to twelve participants per relevant subgroup is typically sufficient for thematic saturation.
+What they can claim: Rich insight into how employees are actually thinking about and interacting with the tool.
+What they cannot claim: Generalizable findings without triangulation against quantitative measures.
+Sample size: Purposive logic, not statistical. No formal power analysis required.
+Caution: Employees may perform differently when observed. Normalize the protocol carefully.
+
+Calibration probes
+What they are: Periodic tasks embedded in workflow presenting employees with AI outputs containing deliberate errors, ambiguities, or out-of-domain content.
+When to use: Lightweight ongoing measurement, early warning system, or when formal study is not feasible given constraints.
+What they require: Instrumentation built into the tool or workflow, organizational commitment to treating results as signal. Needs consistency across waves.
+What they can claim: Whether employees are maintaining critical evaluation of tool outputs over time.
+What they cannot claim: Why the pattern is occurring without supplementary qualitative data.
+Sample size: Signal-detection logic. No formal power analysis required. Consistency matters more than sample size.
+Caution: Design for naturalistic conditions to prevent performance effects.
+
+Self-report confidence measures
+What they are: Survey items measuring how confident employees feel about domain performance, output evaluation, and decision-making with and without the tool.
+When to use: Always, but never alone. Most valuable alongside capability measures to track divergence directly.
+What they require: Multiple timepoint administration, careful item design separating confidence in tool from confidence in own judgment.
+What they can claim: How employees feel about their capability and how that changes over time.
+What they cannot claim: Whether employees are actually more capable. Never interpret rising confidence as capability development.
+Sample size: Target 20-30% of population of interest, minimum 30 per subgroup. Scale to organization size.
+
+On comparison conditions and causal claims:
+Most organizations cannot run a true randomized experiment. Alternatives in order of methodological strength:
+1. Waitlist control: one group gets tool first, another gets it later. Strongest causal evidence short of randomization.
+2. Dose-response: compare high vs low usage employees. No access withholding required.
+3. Synthetic control: use historical performance data to model counterfactual trajectory. Only viable when clean historical data exists. Always ask about historical data availability first.
+4. Pre-post without comparison: most common, weakest for causal claims. Still worth doing. Be explicit: employees changed, not the tool caused the change. Provide specific language: "Following deployment, employees showed meaningful improvement" rather than "the tool improved capability."
+
+On sample size:
+Never produce a recommendation without showing reasoning. Direct practitioners to G*Power for formal power calculations on quantitative methods. Note that think-aloud protocols and calibration probes do not require formal power analysis. Always flag when population size constrains what is statistically achievable.
+
+On domain expertise:
+Determine whether judgment is outcome-based (verifiable answer exists: catching an error, identifying a regulatory exposure) or process-based (no single correct answer but defensible quality markers: strategic prioritization, content quality assessment). Outcome-based: scenario assessments with expert scoring. Process-based: think-aloud protocols especially valuable, scenario assessments usable but scored on reasoning quality. In process-based domains provide specific communication language: "Employees demonstrated more systematic consideration of competing factors" rather than "employees showed improved judgment."
+
+On attrition:
+Design against it from the start. Oversample 20-30% at baseline in voluntary participation contexts (adjust based on specific situation). Use planned missing data design when full participation is unrealistic. Plan attrition analysis before data collection begins. Compare dropouts to completers on baseline measures. Report attrition transparently with specific language: "Of 120 employees completing baseline, 94 completed the 90-day follow-up. Dropouts did not differ significantly from completers on baseline capability scores."
+
+On triangulation:
+Strongest designs combine at least two methods. Scenario-based assessments paired with think-aloud protocols is particularly effective: assessments tell you whether capability is developing, think-alouds tell you why. When resources are constrained, prioritize the combination that best serves the decision being made.
+
+---
+
+REPORT STRUCTURE
+
+Produce a structured report with these sections in this order.
+
+On tone and voice: Write as a senior research practitioner giving a colleague direct, honest advice. Do not soften findings to make them more palatable. Do not inflate what the study can claim. If a situation is constrained, say so directly. If a design has meaningful limitations, name them specifically. Plain professional language. No academic jargon. No generic statements that could apply to any organization. Every sentence should reflect something specific about what this practitioner told you.
+
+On length and depth: Calibrate to complexity. Simple, well-resourced deployments warrant concise reports. Complex, constrained, or ambiguous situations warrant more depth, particularly in Honest Limitations and Before You Can Run This Study sections.
+
+SECTION 1 - ASSESSMENT PARAMETERS
+Neutral professional summary of key inputs. Third person. Short paragraph. Do not name the specific organization. Use descriptive professional framing. Cover: tool, population, organizational context, stakeholder audience, intended use of findings, key constraints.
+
+SECTION 2 - THE CAPABILITY QUESTION FOR THIS CONTEXT
+One to two sentences stating the specific capability question this study is designed to answer. Not generic. Specific to this organization, tool, and population.
+
+SECTION 3 - BEFORE YOU CAN RUN THIS STUDY (conditional)
+Include when: capability construct not clearly defined, stakeholder alignment not established, baseline data urgently needed, organizational resistance already encountered. When in doubt, include it. Better to surface a known precondition than omit an unconsidered one.
+
+If the situation is so constrained a study is not currently feasible, say so directly. Then explain why and state what needs to happen first.
+
+Omit entirely if no preconditions apply.
+
+SECTION 4 - RECOMMENDED STUDY DESIGN
+Four subsections:
+Overall approach: Name the design clearly. Explain why you are recommending it over alternatives given specific constraints. Recommend the most rigorous design that is actually feasible, not the most rigorous design available.
+Recommended methods: Draw from the toolkit. Two methods where possible. For each: why it fits this situation, what it will tell them, what it will not.
+Measurement timepoints: Specific and justified. Named timepoints with rationale. If timeline is too short for meaningful longitudinal measurement, say so directly.
+Sample size: Show reasoning transparently. State relevant inputs. Direct to G*Power for quantitative methods. Note which methods do not require formal power analysis. Flag when population size constrains achievable claims.
+
+SECTION 5 - HONEST LIMITATIONS
+Direct, specific statement of what this study cannot claim and why. Not generic. Give practitioners the specific language to use when presenting findings honestly.
+
+SECTION 6 - WHAT YOUR FINDINGS MIGHT LOOK LIKE
+Three possible outcome patterns: capability developing alongside confidence, confidence outpacing capability, capability not developing. For each pattern, describe what it would look like specifically in the data from the methods recommended for THIS practitioner. Descriptions should be directly interpretable by someone looking at their actual data.
+
+SECTION 7 - COMMUNICATING YOUR FINDINGS
+Tailored to the specific stakeholder audience identified. If multiple audiences, address each separately and note where framing needs to differ most significantly.
+
+SECTION 8 - SUGGESTED NEXT STEPS
+Three to five specific actionable next steps sequenced in the order they need to happen. If a study is not currently feasible, replace with a Preconditions Checklist instead. Specific to this practitioner's situation.
+
+---
+
+WHAT THIS TOOL IS FOR AND WHAT IT IS NOT
+
+This tool exists because most organizations deploying AI to their workforces are measuring the wrong things, and the practitioners who know that often lack a ready framework for doing it differently. Your job is to give them that framework, tailored to their specific situation, honest about what is feasible, and direct about what the evidence can and cannot support.
+
+You are not a research assistant helping someone design any study. You are a capability measurement specialist with a specific theoretical framework and a specific point of view. That point of view is that adoption metrics are insufficient, that confidence and capability diverge in predictable ways when AI tools are involved, and that substitution and development look identical in the short term but diverge in ways that matter enormously over time. Every recommendation you make should reflect that framework.
+
+You are not here to validate whatever measurement approach the practitioner is already using. If their current approach is insufficient, say so directly and explain why. If their timeline is too short for meaningful measurement, say so. If their situation requires preconditions before a study can be designed, say so. Honesty about constraints is more useful than a study design that looks complete on paper and fails in practice.
+
+You are not here to impress the practitioner with methodological complexity. You are here to help them answer the capability question in their specific context with the resources they actually have.
+
+This tool was built by Shannon L. Coleman, PhD, an experience research and strategy leader whose work sits at the intersection of rigorous measurement and organizational decision-making. The framework it applies is grounded in her research and practice. Practitioners who want to go deeper on the theoretical foundation can find it at Ground Truth at byshannoncoleman.substack.com. Her broader work is at shannonlcoleman.com.`;
+
+const QUESTIONS = [
+  { id: 1, section: "About the AI Tool", text: "What does the AI tool do, and what tasks is it meant to help employees with?" },
+  { id: 2, section: "About the AI Tool", text: "How long has it been deployed, or when is deployment planned?" },
+  { id: 3, section: "About the AI Tool", text: "Is it a generative AI tool, a RAG-based system, or something else? If you're not sure, describe how it works and we can figure it out together." },
+  { id: 4, section: "About the AI Tool", text: "How do employees interact with the tool? Conversationally, through recommendations, through automated outputs, or some other way?" },
+  { id: 5, section: "About the AI Tool", text: "To what degree do employees review and evaluate the tool's outputs before they are acted on? Does the output go directly into a workflow or decision with minimal employee review, or do employees actively evaluate and decide whether to use it?" },
+  { id: 6, section: "About the Employee Population", text: "Who are the employees using it? What is their role and domain?" },
+  { id: 7, section: "About the Employee Population", text: "Roughly how many employees are in scope?" },
+  { id: 8, section: "About the Employee Population", text: "How would you describe their baseline familiarity with AI tools?" },
+  { id: 9, section: "About the Employee Population", text: "Are there regulatory or compliance considerations that would affect how you collect data from employees?" },
+  { id: 10, section: "About the Organizational Context", text: "Was baseline data collected before or at deployment?" },
+  { id: 11, section: "About the Organizational Context", text: "What are you currently measuring, and what are those metrics telling you?" },
+  { id: 12, section: "About the Organizational Context", text: "What are you most worried the tool might be doing that your current metrics wouldn't catch?" },
+  { id: 13, section: "About the Organizational Context", text: "Do you have any existing measurement infrastructure beyond that? Surveys, analytics, performance data?" },
+  { id: 14, section: "About the Organizational Context", text: "Have you attempted to measure capability or employee development before, and if so, what happened?" },
+  { id: 15, section: "About the Organizational Context", text: "What is your timeline for having findings, and do you have dedicated research support or will this be done alongside other work?" },
+  { id: 16, section: "About the Organizational Context", text: "How much organizational appetite is there for a formal study versus lightweight ongoing measurement?" },
+  { id: 17, section: "About Stakeholders and Intentions", text: "Who will be seeing these findings and what decisions are they meant to inform? For example: internal research team, HR or people analytics leadership, executive or C-suite, or external reporting." },
+  { id: 18, section: "About Stakeholders and Intentions", text: "What do you intend to do with the results? For example: redesign the tool, make a build vs. buy decision, report on program effectiveness, or build an ongoing measurement practice." },
+  { id: 19, section: "About the Capability Outcomes", text: "What would it look like if this tool was genuinely developing capability in your employees? What would be different about how they work?" }
+];
+
+const GENERATING_MESSAGES = [
+  "Analyzing your inputs...",
+  "Reasoning about feasibility constraints...",
+  "Evaluating measurement options...",
+  "Calibrating to your context...",
+  "Structuring your study design...",
+  "Drafting honest limitations..."
+];
+
+let currentQ = 0;
+let answers = [];
+let generatingInterval = null;
+
+function showPhase(phaseId) {
+  document.querySelectorAll('.phase').forEach(p => p.classList.remove('active'));
+  const target = document.getElementById(phaseId);
+  if (target) {
+    target.classList.add('active');
+    target.classList.remove('fade-in');
+    void target.offsetWidth;
+    target.classList.add('fade-in');
+  }
+}
+
+function startAssessment() {
+  currentQ = 0;
+  answers = [];
+  showPhase('phase-questions');
+  renderQuestion();
+  document.getElementById('main-area').style.display = 'flex';
+  document.getElementById('report-view').classList.remove('active');
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[currentQ];
+  document.getElementById('question-text').textContent = q.text;
+  document.getElementById('progress-section').textContent = q.section;
+  document.getElementById('progress-count').textContent = `${currentQ + 1} / ${QUESTIONS.length}`;
+  document.getElementById('progress-fill').style.width = `${((currentQ + 1) / QUESTIONS.length) * 100}%`;
+
+  const input = document.getElementById('answer-input');
+  input.value = '';
+  input.focus();
+
+  const btn = document.getElementById('continue-btn');
+  btn.disabled = true;
+  btn.textContent = currentQ < QUESTIONS.length - 1 ? 'Continue' : 'Review Answers';
+
+  input.oninput = () => { btn.disabled = input.value.trim() === ''; };
+}
+
+function handleKeyDown(e) {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+    e.preventDefault();
+    submitAnswer();
+  }
+}
+
+function submitAnswer() {
+  const input = document.getElementById('answer-input');
+  const val = input.value.trim();
+  if (!val) return;
+
+  answers.push({ question: QUESTIONS[currentQ].text, section: QUESTIONS[currentQ].section, answer: val });
+
+  if (currentQ < QUESTIONS.length - 1) {
+    currentQ++;
+    showPhase('phase-questions');
+    renderQuestion();
+  } else {
+    renderReview();
+    showPhase('phase-review');
+  }
+}
+
+function renderReview() {
+  const list = document.getElementById('review-list');
+  list.innerHTML = '';
+  answers.forEach((a, i) => {
+    const item = document.createElement('div');
+    item.className = 'review-item';
+    item.id = `review-item-${i}`;
+    item.innerHTML = `
+      <div class="review-item-header">
+        <div>
+          <p class="review-item-meta">${a.section} · Q${i + 1}</p>
+          <p class="review-item-question">${QUESTIONS[i].text}</p>
+        </div>
+        <button class="edit-btn" onclick="toggleEdit(${i})">Edit</button>
+      </div>
+      <p class="review-item-answer" id="answer-display-${i}">${a.answer}</p>
+      <div class="edit-form" id="edit-form-${i}" style="display:none">
+        <textarea id="edit-input-${i}">${a.answer}</textarea>
+        <button class="save-btn" onclick="saveEdit(${i})">Save</button>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+}
+
+function toggleEdit(i) {
+  const display = document.getElementById(`answer-display-${i}`);
+  const form = document.getElementById(`edit-form-${i}`);
+  const btn = document.querySelector(`#review-item-${i} .edit-btn`);
+  if (form.style.display === 'none') {
+    form.style.display = 'block';
+    display.style.display = 'none';
+    btn.textContent = 'Cancel';
+  } else {
+    form.style.display = 'none';
+    display.style.display = 'block';
+    btn.textContent = 'Edit';
+  }
+}
+
+function saveEdit(i) {
+  const val = document.getElementById(`edit-input-${i}`).value.trim();
+  if (!val) return;
+  answers[i].answer = val;
+  document.getElementById(`answer-display-${i}`).textContent = val;
+  toggleEdit(i);
+}
+
+function resetAll() {
+  currentQ = 0;
+  answers = [];
+  clearInterval(generatingInterval);
+  document.getElementById('report-view').classList.remove('active');
+  document.getElementById('main-area').style.display = 'flex';
+  showPhase('phase-intro');
+}
+
+async function generateReport() {
+  showPhase('phase-generating');
+
+  let msgIndex = 0;
+  const statusEl = document.getElementById('generating-status');
+  generatingInterval = setInterval(() => {
+    msgIndex = (msgIndex + 1) % GENERATING_MESSAGES.length;
+    statusEl.textContent = GENERATING_MESSAGES[msgIndex];
+  }, 2200);
+
+  const qaText = answers.map((a, i) => `Q${i + 1}: ${a.question}\nA: ${a.answer}`).join('\n\n');
+  const userMessage = `Here are my responses to your intake questions. Please generate a complete study design report based on everything I have shared.\n\n${qaText}`;
+
+  try {
+    const response = await fetch(PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 8000,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: userMessage }]
+      })
+    });
+
+    const data = await response.json();
+    const rawText = data.content
+      ?.filter(b => b.type === 'text')
+      .map(b => b.text)
+      .join('\n') || 'There was an issue generating your report. Please try again.';
+
+    const cleaned = rawText
+      .replace(/\u2014/g, ',')
+      .replace(/^---+$/gm, '')
+      .replace(/^\s*,-\s*$/gm, '');
+
+    clearInterval(generatingInterval);
+    renderReport(cleaned);
+
+  } catch (err) {
+    clearInterval(generatingInterval);
+    renderReport('There was an error generating your report. Please try again.');
+  }
+}
+
+function renderReport(text) {
+  const body = document.getElementById('report-body');
+  body.innerHTML = '';
+
+  const lines = text.split('\n');
+  lines.forEach(line => {
+    if (!line.trim()) {
+      const spacer = document.createElement('div');
+      spacer.className = 'report-spacer';
+      body.appendChild(spacer);
+      return;
+    }
+
+    // Title (first # or ## heading)
+    if (line.startsWith('# ') || (line.startsWith('## ') && body.children.length < 3)) {
+      const el = document.createElement('h2');
+      el.className = 'report-title';
+      el.textContent = line.replace(/^#{1,2} /, '');
+      body.appendChild(el);
+      return;
+    }
+
+    if (line.startsWith('## ')) {
+      const el = document.createElement('h2');
+      el.className = 'report-h2';
+      el.textContent = line.replace(/^## /, '');
+      body.appendChild(el);
+      return;
+    }
+
+    if (line.startsWith('### ')) {
+      const el = document.createElement('h3');
+      el.className = 'report-h3';
+      el.textContent = line.replace(/^### /, '');
+      body.appendChild(el);
+      return;
+    }
+
+    // Section headers like "Section 1: Assessment Parameters"
+    if (/^(Section \d+:|SECTION \d+)/i.test(line)) {
+      const el = document.createElement('h2');
+      el.className = 'report-h2';
+      el.textContent = line.replace(/^#{1,3} /, '');
+      body.appendChild(el);
+      return;
+    }
+
+    // Subsection headers in ALL CAPS
+    if (/^[A-Z][A-Z\s&]+$/.test(line.trim()) && line.trim().length > 3 && line.trim().length < 60) {
+      const el = document.createElement('h3');
+      el.className = 'report-h3';
+      el.textContent = line.trim();
+      body.appendChild(el);
+      return;
+    }
+
+    // List items
+    if (line.startsWith('- ') || line.startsWith('* ')) {
+      const el = document.createElement('div');
+      el.className = 'report-li';
+      el.innerHTML = `<span class="report-li-bullet">◆</span><span class="report-li-text">${formatInline(line.replace(/^[-*] /, ''))}</span>`;
+      body.appendChild(el);
+      return;
+    }
+
+    // Numbered list items
+    if (/^\d+\.\s/.test(line)) {
+      const el = document.createElement('div');
+      el.className = 'report-li';
+      el.innerHTML = `<span class="report-li-bullet" style="color:var(--gold-dim);min-width:1.2rem">${line.match(/^\d+/)[0]}.</span><span class="report-li-text">${formatInline(line.replace(/^\d+\.\s/, ''))}</span>`;
+      body.appendChild(el);
+      return;
+    }
+
+    // Attribution paragraph (italicized footer)
+    if (line.startsWith('*This') || line.startsWith('*This report')) {
+      const el = document.createElement('p');
+      el.className = 'report-attribution';
+      el.innerHTML = formatInline(line.replace(/^\*/, '').replace(/\*$/, ''));
+      body.appendChild(el);
+      return;
+    }
+
+    // Regular paragraph
+    const el = document.createElement('p');
+    el.className = 'report-p';
+    el.innerHTML = formatInline(line);
+    body.appendChild(el);
+  });
+
+  document.getElementById('main-area').style.display = 'none';
+  document.getElementById('report-view').classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function formatInline(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong class="report-strong">$1</strong>')
+    .replace(/G\*Power/g, 'GPOWERPLACEHOLDER')
+    .replace(/\*(.*?)\*/g, '<em class="report-em">$1</em>')
+    .replace(/GPOWERPLACEHOLDER/g, '<a href="https://www.psychologie.hhu.de/arbeitsgruppen/allgemeine-psychologie-und-arbeitspsychologie/gpower" target="_blank" rel="noopener noreferrer" style="color:var(--gold);text-decoration:none;">G*Power</a>');
+}
+
+// Initialize textarea listener
+document.addEventListener('DOMContentLoaded', () => {
+  const input = document.getElementById('answer-input');
+  const btn = document.getElementById('continue-btn');
+  if (input && btn) {
+    input.addEventListener('input', () => { btn.disabled = input.value.trim() === ''; });
+  }
+});
+</script>
+</body>
+</html>
