@@ -11,6 +11,8 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+  html { background: #141929; }
+
   :root {
     --bg: #141929;
     --bg-panel: #1a2035;
@@ -27,7 +29,9 @@
   }
 
   body {
+    background: #141929;
     background: var(--bg);
+    color: #e8eaf0;
     color: var(--silver);
     font-family: 'DM Sans', sans-serif;
     min-height: 100vh;
@@ -615,6 +619,8 @@
 
   #report-view.active ~ footer,
   #report-view.active + footer { display: none; }
+
+  @media print {
     .site-header, .site-footer, .report-header-right, .report-footer { display: none !important; }
     body, #report-view { background: white !important; color: black !important; }
     .report-body { border: none; padding: 0; background: white; }
