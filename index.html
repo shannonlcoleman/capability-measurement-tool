@@ -9,11 +9,11 @@
 <meta property="og:description" content="An AI-powered research design tool for measuring what AI enablement actually does to the people using it. Answer 19 questions, get a tailored study design.">
 <meta property="og:url" content="https://shannonlcoleman.com/capability-measurement-tool/">
 <meta property="og:type" content="website">
-<meta property="og:image" content="https://shannonlcoleman.com/og-image-v2.jpg">
+<meta property="og:image" content="https://shannonlcoleman.com/capability-measurement-tool/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="The Capability Question: AI Enablement Measurement Tool">
 <meta name="twitter:description" content="An AI-powered research design tool for measuring what AI enablement actually does to the people using it.">
-<meta name="twitter:image" content="https://shannonlcoleman.com/og-image-v2.jpg">
+<meta name="twitter:image" content="https://shannonlcoleman.com/capability-measurement-tool/og-image.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -1054,6 +1054,24 @@ function resetAll() {
   showPhase('phase-intro');
 }
 
+async function fetchWithRetry(url, options, retries = 1) {
+  try {
+    const response = await fetch(url, options);
+    const data = await response.json();
+    if (data.error && retries > 0) {
+      await new Promise(r => setTimeout(r, 2000));
+      return fetchWithRetry(url, options, retries - 1);
+    }
+    return data;
+  } catch (err) {
+    if (retries > 0) {
+      await new Promise(r => setTimeout(r, 2000));
+      return fetchWithRetry(url, options, retries - 1);
+    }
+    throw err;
+  }
+}
+
 async function generateReport() {
   showPhase('phase-generating');
 
@@ -1068,7 +1086,7 @@ async function generateReport() {
   const userMessage = `Here are my responses to your intake questions. Please generate a complete study design report based on everything I have shared.\n\n${qaText}`;
 
   try {
-    const response = await fetch(PROXY_URL, {
+    const data = await fetchWithRetry(PROXY_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1079,7 +1097,6 @@ async function generateReport() {
       })
     });
 
-    const data = await response.json();
     const rawText = data.content
       ?.filter(b => b.type === 'text')
       .map(b => b.text)
