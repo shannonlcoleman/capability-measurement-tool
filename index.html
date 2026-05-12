@@ -55,6 +55,9 @@
     padding: 1rem;
     z-index: 10;
     pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .site-header span {
@@ -643,7 +646,8 @@
 <div class="bg-gradient"></div>
 
 <header class="site-header">
-  <span><a href="https://shannonlcoleman.com" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;pointer-events:all;">shannonlcoleman.com</a> · Ground Truth · Capability Measurement Tool</span>
+  <a href="https://shannonlcoleman.com" target="_blank" rel="noopener" style="position:absolute;left:1.5rem;top:50%;transform:translateY(-50%);font-size:0.65rem;letter-spacing:0.1em;color:var(--silver-dim);text-decoration:none;opacity:0.5;transition:opacity 0.2s;pointer-events:all;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.5'">← shannonlcoleman.com</a>
+  <span>Ground Truth · Capability Measurement Tool</span>
 </header>
 
 <!-- MAIN INTERACTION AREA -->
