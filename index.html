@@ -630,18 +630,15 @@
   #report-view.active + footer { display: none; }
 
   @media print {
-    /* Force report view visible regardless of JS state */
     #report-view { display: block !important; }
     #main-area { display: none !important; }
 
-    /* Hide UI chrome */
     .site-header,
     .site-footer,
     .report-header-right,
     .report-footer,
     .bg-gradient { display: none !important; }
 
-    /* White backgrounds everywhere, no background-graphics needed */
     html, body { background: #fff !important; color: #111 !important; }
     #report-view { background: #fff !important; padding: 0 !important; min-height: unset !important; }
     .report-container { max-width: 100% !important; }
@@ -652,7 +649,6 @@
       box-shadow: none !important;
     }
 
-    /* Report header */
     .report-header {
       border-bottom: 1px solid #ccc !important;
       margin-bottom: 1.5rem !important;
@@ -660,7 +656,6 @@
     .report-eyebrow { color: #888 !important; }
     .report-header-left h1 { color: #111 !important; }
 
-    /* Report content */
     .report-title {
       color: #222 !important;
       border-bottom: 1px solid #ccc !important;
@@ -680,11 +675,9 @@
       border-top: 1px solid #ccc !important;
     }
 
-    /* Page breaks */
     .report-h2 { page-break-after: avoid; }
     .report-li { page-break-inside: avoid; }
 
-    /* Print-only attribution */
     .print-attribution {
       display: block !important;
       margin-top: 2rem;
@@ -1014,7 +1007,15 @@ function showPhase(phaseId) {
   }
 }
 
+// GA4 event tracking helper
+function trackEvent(eventName, params) {
+  if (typeof gtag !== 'undefined') {
+    gtag('event', eventName, params);
+  }
+}
+
 function startAssessment() {
+  trackEvent('tool_started', { event_category: 'capability_tool' });
   currentQ = 0;
   answers = [];
   showPhase('phase-questions');
@@ -1054,6 +1055,7 @@ function submitAnswer() {
   if (!val) return;
 
   answers.push({ question: QUESTIONS[currentQ].text, section: QUESTIONS[currentQ].section, answer: val });
+  trackEvent('question_answered', { event_category: 'capability_tool', question_number: currentQ + 1 });
 
   if (currentQ < QUESTIONS.length - 1) {
     currentQ++;
@@ -1142,6 +1144,7 @@ async function fetchWithRetry(url, options, retries = 1) {
 }
 
 async function generateReport() {
+  trackEvent('report_generated', { event_category: 'capability_tool' });
   showPhase('phase-generating');
 
   let msgIndex = 0;
@@ -1198,7 +1201,6 @@ function renderReport(text) {
       return;
     }
 
-    // Title (first # or ## heading)
     if (line.startsWith('# ') || (line.startsWith('## ') && body.children.length < 3)) {
       const el = document.createElement('h2');
       el.className = 'report-title';
@@ -1223,7 +1225,6 @@ function renderReport(text) {
       return;
     }
 
-    // Section headers like "Section 1: Assessment Parameters"
     if (/^(Section \d+:|SECTION \d+)/i.test(line)) {
       const el = document.createElement('h2');
       el.className = 'report-h2';
@@ -1232,7 +1233,6 @@ function renderReport(text) {
       return;
     }
 
-    // Subsection headers in ALL CAPS
     if (/^[A-Z][A-Z\s&]+$/.test(line.trim()) && line.trim().length > 3 && line.trim().length < 60) {
       const el = document.createElement('h3');
       el.className = 'report-h3';
@@ -1241,7 +1241,6 @@ function renderReport(text) {
       return;
     }
 
-    // List items
     if (line.startsWith('- ') || line.startsWith('* ')) {
       const el = document.createElement('div');
       el.className = 'report-li';
@@ -1250,7 +1249,6 @@ function renderReport(text) {
       return;
     }
 
-    // Numbered list items
     if (/^\d+\.\s/.test(line)) {
       const el = document.createElement('div');
       el.className = 'report-li';
@@ -1259,7 +1257,6 @@ function renderReport(text) {
       return;
     }
 
-    // Attribution paragraph (italicized footer)
     if (line.startsWith('*This') || line.startsWith('*This report')) {
       const el = document.createElement('p');
       el.className = 'report-attribution';
@@ -1268,13 +1265,13 @@ function renderReport(text) {
       return;
     }
 
-    // Regular paragraph
     const el = document.createElement('p');
     el.className = 'report-p';
     el.innerHTML = formatInline(line);
     body.appendChild(el);
   });
 
+  trackEvent('report_viewed', { event_category: 'capability_tool' });
   document.getElementById('main-area').style.display = 'none';
   document.getElementById('report-view').classList.add('active');
   document.querySelector('.site-footer').style.display = 'none';
@@ -1289,7 +1286,6 @@ function formatInline(text) {
     .replace(/GPOWERPLACEHOLDER/g, '<a href="https://www.psychologie.hhu.de/arbeitsgruppen/allgemeine-psychologie-und-arbeitspsychologie/gpower" target="_blank" rel="noopener noreferrer" style="color:var(--gold);text-decoration:none;">G*Power</a>');
 }
 
-// Initialize textarea listener
 document.addEventListener('DOMContentLoaded', () => {
   const input = document.getElementById('answer-input');
   const btn = document.getElementById('continue-btn');
