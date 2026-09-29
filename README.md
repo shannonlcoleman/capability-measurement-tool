@@ -2,7 +2,7 @@
 
 A research design assistant that helps practitioners measure what AI enablement actually does to the people using it.
 
-Most organizations deploying AI tools to their workforce are measuring adoption. Utilization rates. Completion data. Satisfaction scores. None of that tells you whether your people are actually getting better at their jobs.
+Most organizations deploying AI tools to their workforce measure adoption through utilization rates, completion data, and satisfaction scores. None of that tells you whether your people are actually getting better at their jobs.
 
 This tool asks you 19 questions about your AI tool, your employee population, and your organizational context. Then it generates a tailored study design, honest about what is feasible and specific about what the findings can and cannot claim.
 
